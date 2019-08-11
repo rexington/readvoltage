@@ -8,7 +8,7 @@ I'll document this more, perhaps. For now, look at the code.
 See this Fritzing diagram:
 ![diagram of arduino hookup](arduino-measure-voltage.png "Breadboard layout")
 
-The voltage divider is a 47k connected to the positive rail of the supply to be measured, and a 22k connected to the negative side.
+The voltage divider is a 47k connected to the positive rail of the supply to be measured, and a 22k connected to the negative side.  There's one wire with a positive voltage going to the input pin, and the ground is already shared with the power supply being measured.
 
 I calculated the maximum voltage this can measure to be 15.682.  This is because the top limit the Arduino can measure is 5v. So when the voltage is at 15.682, the voltage divider divides it down to 15.682.  Of course, there are variances in resistors.  After measuring the voltage with a multimeter, I adjusted the number slightly in the code.
 
