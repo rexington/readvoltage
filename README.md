@@ -18,3 +18,9 @@ https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives
 
 The guide I used for the display setup:
 https://randomnerdtutorials.com/guide-for-oled-display-with-arduino/
+
+Voltage divider calculator:
+http://www.ohmslawcalculator.com/voltage-divider-calculator
+
+oled:
+https://www.ebay.com/itm/0-96-I2C-IIC-Serial-128-64-Blue-white-OLED-LCD-LED-Display-Module-for-Arduino/273156460316
