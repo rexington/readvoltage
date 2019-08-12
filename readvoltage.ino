@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "LowPower.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -116,6 +117,8 @@ void loop() {
   display.drawRect(0,56,128,8, WHITE);
   display.fillRect(0,57,dispMappedAverage,6, WHITE);
   display.display(); 
-  delay(200);        // 200msec = 5 reads per second
+  LowPower.powerDown(SLEEP_250MS, ADC_OFF, BOD_OFF); // 250ms = ~4 reads per second, with the µcontroller powered down in between reads
+  // if we want to truly go low-power, though, would need to disable LEDs on the Arduino, and only have the oled display on when needed
+  // (maybe use a toggle for that?)
   
 }
