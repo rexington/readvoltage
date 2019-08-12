@@ -4,16 +4,25 @@
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define TOP_CHARGE 14600 // top battery voltage
+#define BOTTOM_CHARGE 10200 // bottom battery voltage
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-
-
-// Define the number of samples to keep track of. The higher the number, the
-// more the readings will be smoothed, but the slower the output will respond to
-// the input. Using a constant rather than a normal variable lets us use this
-// value to determine the size of the readings array.
+/*
+ * Using Smoothing example from Arduino public domain 
+ *  * created 22 Apr 2007
+ * by David A. Mellis  <dam@mellis.org>
+ * modified 9 Apr 2012
+ * by Tom Igoe
+ * http://www.arduino.cc/en/Tutorial/Smoothing
+ * 
+ * The rest of the code is pieced together from my experimentation and 
+ * various examples/tutorials out there on the World Wide Interwebs (WWI)
+ * - Rex Vokey (KE6MT) 12 Aug 2019
+ */
+ 
 const int numReadings = 20;
 
 int readings[numReadings];      // the readings from the analog input
@@ -23,6 +32,12 @@ int average = 0;                // the average
 float voltMappedAverage = 0;        // mapped average for voltage
 int dispMappedAverage = 0;      // for bar display
 float voltage = 0;            // floating point voltage
+
+int top90 = 100;
+int middle = 100;
+int bottom = 0;
+bool battLow = false;
+
 
 int inputPin = A0;
 
@@ -63,22 +78,44 @@ void loop() {
 
   // calculate the average:
   average = total / numReadings;
+  // turn into mapped voltage, based on our voltage divider figures
   voltMappedAverage = float(map(average,0,1023,0,15670));
-  dispMappedAverage = map(average,0,1023,1,126);
+  // bring integer down to floating point voltage
   voltage = voltMappedAverage/1000;
-  // send it to the computer as ASCII digits
-  Serial.println(voltage);
-    // Display static text
+  
+  // really crude capacity meter - currently based on 4S LiFePO4
+  if (voltMappedAverage > 13000) {
+    top90 = map((TOP_CHARGE - voltMappedAverage),0,(TOP_CHARGE - 13000),10,0);
+    dispMappedAverage = map(90 + top90,1,100,1,126);
+    battLow = false;
+  } else if (voltMappedAverage > 12400) {
+    middle = map((13000 - voltMappedAverage),0,(13000 - 12400),60,0);
+    dispMappedAverage = map(20 + middle,1,100,1,126);
+    battLow = false;
+  } else {
+    bottom = map((12400 - voltMappedAverage),0,(12400 - BOTTOM_CHARGE),20,0);
+    dispMappedAverage = map(bottom,1,100,1,126);
+    battLow = true;
+  }
+
+  // Display all the infos
   display.clearDisplay();
-  display.setCursor(0, 0);
+  display.setCursor(10, 0);
   display.setTextSize(2);
-  display.println("voltage");
+  // display warning text if it's time to disconnect (could do other things here, like perform a shutdown)
+  if (battLow) {  
+    display.println("warning!");
+  } else {
+    display.println("voltage:");
+  }
   display.setTextSize(4);
-  display.setCursor(0,22);
-  display.print(voltage);
+  display.setCursor(16,22);
+  // display voltage with one decimal place
+  display.print(voltage,1);
+  // capacity bar
   display.drawRect(0,56,128,8, WHITE);
   display.fillRect(0,57,dispMappedAverage,6, WHITE);
   display.display(); 
-  delay(50);        // delay in between reads for stability
+  delay(200);        // 200msec = 5 reads per second
   
 }
